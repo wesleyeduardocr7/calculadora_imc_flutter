@@ -1,3 +1,6 @@
+import 'dart:ffi';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -10,6 +13,41 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+  TextEditingController weightController = TextEditingController();
+  TextEditingController heightController = TextEditingController();
+  String _infoText = "Insira seus Dados";
+
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  void _resetFields(){
+    weightController.text = "";
+    heightController.text = "";
+    setState(() {
+      _infoText = "Insira seus Dados";
+    });
+  }
+  void _calculate(){
+    setState(() {
+      double weight = double.parse(weightController.text);
+      double height = double.parse(heightController.text) / 100;
+      double imc = weight / (height * height);
+      if(imc < 18.6){
+        _infoText = "Abaixo do Peso (${imc.toStringAsPrecision(4)})";
+      } else if(imc >= 18.6 && imc < 24.9){
+        _infoText = "Peso Ideal (${imc.toStringAsPrecision(4)})";
+      } else if(imc >= 24.9 && imc < 29.9){
+        _infoText = "Levemente Acima do Peso (${imc.toStringAsPrecision(4)})";
+      } else if(imc >= 29.9 && imc < 34.9){
+        _infoText = "Obesidade Grau I (${imc.toStringAsPrecision(4)})";
+      } else if(imc >= 34.9 && imc < 39.9){
+        _infoText = "Obesidade Grau II (${imc.toStringAsPrecision(4)})";
+      } else if(imc >= 40){
+        _infoText = "Obesidade Grau III (${imc.toStringAsPrecision(4)})";
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,7 +58,7 @@ class _HomeState extends State<Home> {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.refresh),
-            onPressed: () {},
+            onPressed: _resetFields,
           ),
         ],
       ),
@@ -29,46 +67,83 @@ class _HomeState extends State<Home> {
       body: SingleChildScrollView(
 
         padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 0.0),
+        child: Form(
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Icon(Icons.person_outline, size: 120.0, color: Colors.green),
-            TextField(
-              keyboardType: TextInputType.number,
-              style: TextStyle(color: Colors.green, fontSize: 25.0),
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(labelText: "Peso: (Kg)"),
-              cursorColor: Colors.purple,
-            ),
-            TextField(
-              keyboardType: TextInputType.number,
-              style: TextStyle(color: Colors.green, fontSize: 25.0),
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(labelText: "Altura: (cm)"),
-              cursorColor: Colors.purple,
-            ),
+          key: _formKey,
 
-            Padding(
-              padding: EdgeInsets.only(top: 15.0, bottom: 10.0),
-              child:   Container(
-                height: 50.0,
-                child: RaisedButton(
-                  color: Colors.green,
-                  child: Text("Calcular",
-                      style: TextStyle(fontSize: 20.0, color: Colors.white, fontWeight: FontWeight.bold)),
-                  onPressed: (){},
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Icon(Icons.person_outline, size: 120.0, color: Colors.green),
+              TextFormField(
+                keyboardType: TextInputType.number,
+                style: TextStyle(color: Colors.green, fontSize: 25.0),
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(labelText: "Peso: (Kg)"),
+                cursorColor: Colors.purple,
+                controller: weightController,
+                // ignore: missing_return
+                validator: (value){
+                  if(value.isEmpty){
+                    return "Insira seu Peso";
+                  }
+                },
+              ),
+              TextFormField(
+                keyboardType: TextInputType.number,
+                style: TextStyle(color: Colors.green, fontSize: 25.0),
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(labelText: "Altura: (cm)"),
+                cursorColor: Colors.purple,
+                controller: heightController,
+                // ignore: missing_return
+                validator: (value){
+                  if(value.isEmpty){
+                    return "Insira sua Altura";
+                  }
+                },
+              ),
+
+              Padding(
+                padding: EdgeInsets.only(top: 15.0, bottom: 10.0),
+                child:   Container(
+                  height: 50.0,
+                  child: RaisedButton(
+                    color: Colors.green,
+                    child: Text("Calcular",
+                        style: TextStyle(fontSize: 20.0, color: Colors.white, fontWeight: FontWeight.bold)),
+                    onPressed: () {
+                      if(_formKey.currentState.validate()){
+                        _calculate();
+                      }
+                    },
+                  ),
                 ),
               ),
-            ),
 
-            Padding(
-                padding: EdgeInsets.all(10.0),
-                child: Text("Info",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.green, fontSize: 25.0))
-            ),
-          ],
+              Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Text(_infoText,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.green, fontSize: 25.0))
+              ),
+
+              Padding(
+                  padding: EdgeInsets.only(top: 50.0),
+                  child: Text("@wesleyeduardo.ti",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.blue, fontSize: 25.0, fontWeight: FontWeight.bold)),
+              ),
+
+              Padding(
+                  padding: EdgeInsets.only(top: 20.0),
+                  child: Text("wesleyeduardo.com.br",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.blue, fontSize: 25.0, fontWeight: FontWeight.bold))
+              ),
+
+            ],
+          ),
         ),
       ) ,
     );
